@@ -43,6 +43,8 @@ int GgApp::main(int argc, const char* const* argv)
   // プログラムオブジェクトの作成
   const auto program{ loadProgram(PROJECT_NAME ".vert", "p0", PROJECT_NAME ".frag", "fc") };
 
+
+
   // uniform 変数のインデックスの検索（見つからなければ -1）
   const auto mcLoc{ glGetUniformLocation(program, "mc") };
   const auto tLoc{ glGetUniformLocation(program, "t") };
@@ -53,6 +55,14 @@ int GgApp::main(int argc, const char* const* argv)
 
   // 頂点配列オブジェクトの作成
   const auto vao{ createObject(vertices, p0, lines, e) };
+
+  // in 変数 (attribute 変数) p1 のインデックスの検索 (⾒つからなければ -1)
+  const auto p1Loc{ glGetAttribLocation(program, "p1") };
+  // p1 の頂点バッファオブジェクトの作成
+  GLuint p1Buf;
+  glGenBuffers(1, &p1Buf);
+  glBindBuffer(GL_ARRAY_BUFFER, p1Buf);
+  glBufferData(GL_ARRAY_BUFFER, vertices * sizeof(GLfloat[3]), p1, GL_STATIC_DRAW);
 
   // 平行移動の経路
   static const float route[][3]
@@ -126,6 +136,14 @@ int GgApp::main(int argc, const char* const* argv)
 
     // 描画に使う頂点配列オブジェクトの指定
     glBindVertexArray(vao);
+
+    // 頂点バッファオブジェクトを in (attribute) 変数 p1（p1Loc は変数 p1 のインデックス）で参照する
+    glBindBuffer(GL_ARRAY_BUFFER, p1Buf);
+    glVertexAttribPointer(p1Loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(p1Loc);
+
+    // 時刻の設定（tLoc は uniform 変数 t のインデックス）
+    glUniform1f(tLoc, t);
 
     // 図形の描画
     glDrawElements(GL_LINES, lines, GL_UNSIGNED_INT, 0);
